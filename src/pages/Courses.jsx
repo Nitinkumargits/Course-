@@ -220,7 +220,7 @@ const Courses = () => {
             transition={{ duration: 0.8 }}>
             <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
               <GSAPWordAnimation
-                text="Explore Our"
+                text="Explore Our Courses"
                 className="inline-block"
                 delay={0.2}
                 duration={0.8}

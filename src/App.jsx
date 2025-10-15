@@ -58,7 +58,11 @@ const PageWrapper = ({ children }) => (
 function App() {
   return (
     <AppProvider>
-      <Router>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}>
         <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
           <Navbar />
 

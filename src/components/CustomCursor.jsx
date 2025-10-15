@@ -24,7 +24,11 @@ const CustomCursor = () => {
     // Add event listeners for interactive elements
     const handleMouseEnter = (e) => {
       const target = e.target;
-      if (target.matches('button, a, [data-cursor="pointer"]')) {
+      if (
+        target &&
+        typeof target.matches === "function" &&
+        target.matches('button, a, [data-cursor="pointer"]')
+      ) {
         setIsHovering(true);
         setCursorText(target.dataset.cursorText || "");
       }
@@ -32,7 +36,11 @@ const CustomCursor = () => {
 
     const handleMouseLeave = (e) => {
       const target = e.target;
-      if (target.matches('button, a, [data-cursor="pointer"]')) {
+      if (
+        target &&
+        typeof target.matches === "function" &&
+        target.matches('button, a, [data-cursor="pointer"]')
+      ) {
         setIsHovering(false);
         setCursorText("");
       }
