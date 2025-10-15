@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   motion,
@@ -6,6 +6,8 @@ import {
   useTransform,
   AnimatePresence,
 } from "framer-motion";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   Star,
   Clock,
@@ -41,11 +43,25 @@ import {
 import { courses } from "../data/courses";
 import { useApp } from "../context/AppContext";
 
+// Register GSAP plugins
+gsap.registerPlugin(ScrollTrigger);
+
 const CourseDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart, cart } = useApp();
   const [activeTab, setActiveTab] = useState("overview");
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+
+    // GSAP animation for tab content
+    gsap.fromTo(
+      ".tab-content",
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }
+    );
+  };
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
@@ -57,6 +73,17 @@ const CourseDetail = () => {
   const [progress, setProgress] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const { scrollY } = useScroll();
+
+  // GSAP refs
+  const heroRef = useRef(null);
+  const titleRef = useRef(null);
+  const descriptionRef = useRef(null);
+  const statsRef = useRef(null);
+  const videoRef = useRef(null);
+  const tabsRef = useRef(null);
+  const sidebarRef = useRef(null);
+  const featuresRef = useRef(null);
+  const floatingElementsRef = useRef(null);
 
   // Parallax transforms
   const heroY = useTransform(scrollY, [0, 300], [0, -100]);
@@ -84,6 +111,15 @@ const CourseDetail = () => {
   const handleAddToCart = () => {
     addToCart(course);
     addNotification("Course added to cart!", "success");
+
+    // GSAP animation for add to cart button
+    gsap.to(".add-to-cart-btn", {
+      scale: 1.05,
+      duration: 0.2,
+      yoyo: true,
+      repeat: 1,
+      ease: "power2.out",
+    });
   };
 
   const handleBuyNow = () => {
@@ -107,10 +143,26 @@ const CourseDetail = () => {
       isWishlisted ? "Removed from wishlist" : "Added to wishlist",
       "success"
     );
+
+    // GSAP animation for wishlist button
+    gsap.to(".wishlist-btn", {
+      scale: 1.2,
+      duration: 0.2,
+      yoyo: true,
+      repeat: 1,
+      ease: "power2.out",
+    });
   };
 
   const handleShare = () => {
     setShowShareMenu(!showShareMenu);
+
+    // GSAP animation for share button
+    gsap.to(".share-btn", {
+      rotation: 360,
+      duration: 0.5,
+      ease: "power2.out",
+    });
   };
 
   const toggleModule = (moduleIndex) => {
@@ -118,6 +170,20 @@ const CourseDetail = () => {
       ...prev,
       [moduleIndex]: !prev[moduleIndex],
     }));
+
+    // GSAP animation for module expansion
+    const moduleElement = document.querySelector(
+      `[data-module="${moduleIndex}"]`
+    );
+    if (moduleElement) {
+      gsap.to(moduleElement, {
+        scale: 1.02,
+        duration: 0.2,
+        yoyo: true,
+        repeat: 1,
+        ease: "power2.out",
+      });
+    }
   };
 
   const handleRatingClick = (rating) => {
@@ -126,6 +192,16 @@ const CourseDetail = () => {
       `Thank you for rating this course ${rating} stars!`,
       "success"
     );
+
+    // GSAP animation for rating stars
+    gsap.to(".rating-star", {
+      scale: 1.3,
+      duration: 0.1,
+      stagger: 0.05,
+      yoyo: true,
+      repeat: 1,
+      ease: "power2.out",
+    });
   };
 
   const handleRatingHover = (rating) => {
@@ -157,6 +233,168 @@ const CourseDetail = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showShareMenu]);
+
+  // GSAP Animations
+  useEffect(() => {
+    if (!course) return;
+
+    const ctx = gsap.context(() => {
+      // Hero section animations
+      const tl = gsap.timeline();
+
+      // Set initial states
+      gsap.set([titleRef.current, descriptionRef.current, statsRef.current], {
+        opacity: 0,
+        y: 50,
+      });
+
+      gsap.set(floatingElementsRef.current?.children, {
+        opacity: 0,
+        scale: 0,
+        rotation: 0,
+      });
+
+      // Hero title and description animation
+      tl.to(titleRef.current, {
+        opacity: 1,
+        y: 0,
+        duration: 1,
+        ease: "power3.out",
+      })
+        .to(
+          descriptionRef.current,
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power3.out",
+          },
+          "-=0.5"
+        )
+        .to(
+          statsRef.current,
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power3.out",
+          },
+          "-=0.3"
+        );
+
+      // Floating elements animation
+      gsap.to(floatingElementsRef.current?.children, {
+        opacity: 0.3,
+        scale: 1,
+        rotation: 360,
+        duration: 2,
+        stagger: 0.2,
+        ease: "power2.out",
+        delay: 0.5,
+      });
+
+      // Continuous floating animation
+      gsap.to(floatingElementsRef.current?.children, {
+        y: "+=20",
+        rotation: "+=10",
+        duration: 3,
+        ease: "sine.inOut",
+        stagger: 0.3,
+        repeat: -1,
+        yoyo: true,
+      });
+
+      // Video section scroll trigger
+      ScrollTrigger.create({
+        trigger: videoRef.current,
+        start: "top 80%",
+        onEnter: () => {
+          gsap.fromTo(
+            videoRef.current,
+            { opacity: 0, y: 100, scale: 0.9 },
+            { opacity: 1, y: 0, scale: 1, duration: 1, ease: "power3.out" }
+          );
+        },
+      });
+
+      // Tabs section animation
+      ScrollTrigger.create({
+        trigger: tabsRef.current,
+        start: "top 80%",
+        onEnter: () => {
+          gsap.fromTo(
+            tabsRef.current,
+            { opacity: 0, x: -50 },
+            { opacity: 1, x: 0, duration: 0.8, ease: "power3.out" }
+          );
+        },
+      });
+
+      // Sidebar animation
+      ScrollTrigger.create({
+        trigger: sidebarRef.current,
+        start: "top 80%",
+        onEnter: () => {
+          gsap.fromTo(
+            sidebarRef.current,
+            { opacity: 0, x: 50, scale: 0.95 },
+            { opacity: 1, x: 0, scale: 1, duration: 1, ease: "power3.out" }
+          );
+        },
+      });
+
+      // Features animation
+      ScrollTrigger.create({
+        trigger: featuresRef.current,
+        start: "top 80%",
+        onEnter: () => {
+          gsap.fromTo(
+            featuresRef.current?.children,
+            { opacity: 0, y: 30, scale: 0.9 },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.6,
+              stagger: 0.1,
+              ease: "power3.out",
+            }
+          );
+        },
+      });
+
+      // Add hover animations for interactive elements
+      const addHoverAnimations = () => {
+        // Wishlist button hover
+        gsap.set(".wishlist-btn", { transformOrigin: "center" });
+
+        // Add to cart button hover
+        gsap.set(".add-to-cart-btn", { transformOrigin: "center" });
+
+        // Rating stars hover
+        gsap.set(".rating-star", { transformOrigin: "center" });
+
+        // Feature items hover
+        gsap.set(featuresRef.current?.children, {
+          transformOrigin: "left center",
+        });
+      };
+
+      addHoverAnimations();
+
+      // Floating action button animation
+      gsap.to(".floating-cart-btn", {
+        y: -10,
+        duration: 2,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+        delay: 2,
+      });
+    }, heroRef);
+
+    return () => ctx.revert();
+  }, [course]);
 
   // Mock reviews data
   const reviews = [
@@ -203,7 +441,9 @@ const CourseDetail = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+    <div
+      className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16"
+      ref={heroRef}>
       {/* Enhanced Hero Section with Parallax */}
       <section className="relative py-16 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 overflow-hidden">
         {/* Background Elements */}
@@ -217,6 +457,7 @@ const CourseDetail = () => {
 
         {/* Floating Elements */}
         <motion.div
+          ref={floatingElementsRef}
           style={{ y: useTransform(scrollY, [0, 400], [0, -100]) }}
           className="absolute inset-0 pointer-events-none">
           <motion.div
@@ -267,32 +508,22 @@ const CourseDetail = () => {
             </motion.button>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center">
-            <motion.h1
-              className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6"
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.2 }}>
+          <div className="text-center">
+            <h1
+              ref={titleRef}
+              className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6">
               {course.title}
-            </motion.h1>
+            </h1>
 
-            <motion.p
-              className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-4xl mx-auto"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}>
+            <p
+              ref={descriptionRef}
+              className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-4xl mx-auto">
               {course.description}
-            </motion.p>
+            </p>
 
-            <motion.div
-              className="flex flex-wrap justify-center items-center gap-6"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}>
+            <div
+              ref={statsRef}
+              className="flex flex-wrap justify-center items-center gap-6">
               <div className="flex items-center">
                 <Star className="h-6 w-6 text-yellow-400 fill-current mr-2" />
                 <span className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -317,8 +548,8 @@ const CourseDetail = () => {
                   {course.duration}
                 </span>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </motion.div>
       </section>
 
@@ -341,7 +572,7 @@ const CourseDetail = () => {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={handleWishlist}
-                    className={`p-2 transition-colors duration-200 ${
+                    className={`wishlist-btn p-2 transition-colors duration-200 ${
                       isWishlisted
                         ? "text-red-500"
                         : "text-gray-400 hover:text-red-500"
@@ -357,7 +588,7 @@ const CourseDetail = () => {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={handleShare}
-                      className="p-2 text-gray-400 hover:text-blue-500 transition-colors duration-200">
+                      className="share-btn p-2 text-gray-400 hover:text-blue-500 transition-colors duration-200">
                       <Share2 className="h-5 w-5" />
                     </motion.button>
                     <AnimatePresence>
@@ -415,7 +646,9 @@ const CourseDetail = () => {
               </div>
 
               {/* Enhanced Preview Video */}
-              <div className="relative bg-gray-900 rounded-lg overflow-hidden mb-6 group">
+              <div
+                ref={videoRef}
+                className="relative bg-gray-900 rounded-lg overflow-hidden mb-6 group">
                 <div className="aspect-video">
                   {isVideoPlaying ? (
                     <iframe
@@ -479,10 +712,8 @@ const CourseDetail = () => {
             </motion.div>
 
             {/* Tabs */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
+            <div
+              ref={tabsRef}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-lg mb-8">
               <div className="border-b border-gray-200 dark:border-gray-700">
                 <nav className="flex space-x-8 px-6">
@@ -490,7 +721,7 @@ const CourseDetail = () => {
                     <motion.button
                       key={tab.id}
                       whileHover={{ y: -2 }}
-                      onClick={() => setActiveTab(tab.id)}
+                      onClick={() => handleTabChange(tab.id)}
                       className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
                         activeTab === tab.id
                           ? "border-blue-500 text-blue-600 dark:text-blue-400"
@@ -505,10 +736,7 @@ const CourseDetail = () => {
 
               <div className="p-6">
                 {activeTab === "overview" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}>
+                  <div className="tab-content">
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                       About this course
                     </h3>
@@ -531,14 +759,11 @@ const CourseDetail = () => {
                         </motion.li>
                       ))}
                     </ul>
-                  </motion.div>
+                  </div>
                 )}
 
                 {activeTab === "curriculum" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}>
+                  <div className="tab-content">
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                       Course Curriculum
                     </h3>
@@ -546,6 +771,7 @@ const CourseDetail = () => {
                       {course.modules.map((module, index) => (
                         <motion.div
                           key={index}
+                          data-module={index}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -633,14 +859,11 @@ const CourseDetail = () => {
                         </motion.div>
                       ))}
                     </div>
-                  </motion.div>
+                  </div>
                 )}
 
                 {activeTab === "instructor" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}>
+                  <div className="tab-content">
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
                       About the instructor
                     </h3>
@@ -728,14 +951,11 @@ const CourseDetail = () => {
                         </div>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
 
                 {activeTab === "reviews" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}>
+                  <div className="tab-content">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
                         Student Reviews
@@ -837,7 +1057,7 @@ const CourseDetail = () => {
                             onMouseLeave={handleRatingLeave}
                             className="focus:outline-none">
                             <Star
-                              className={`h-8 w-8 ${
+                              className={`rating-star h-8 w-8 ${
                                 star <= (hoveredRating || userRating)
                                   ? "text-yellow-400 fill-current"
                                   : "text-gray-300 hover:text-yellow-300"
@@ -909,19 +1129,15 @@ const CourseDetail = () => {
                           </motion.div>
                         ))}
                     </div>
-                  </motion.div>
+                  </div>
                 )}
               </div>
-            </motion.div>
+            </div>
           </div>
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="sticky top-24">
+            <div ref={sidebarRef} className="sticky top-24">
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                 <div className="text-center mb-6">
                   <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -963,7 +1179,7 @@ const CourseDetail = () => {
                     whileTap={{ scale: 0.98 }}
                     onClick={handleAddToCart}
                     disabled={isInCart}
-                    className={`w-full font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center ${
+                    className={`add-to-cart-btn w-full font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center ${
                       isInCart
                         ? "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                         : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600"
@@ -1002,7 +1218,7 @@ const CourseDetail = () => {
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-4">
                     This course includes:
                   </h4>
-                  <ul className="space-y-4">
+                  <ul ref={featuresRef} className="space-y-4">
                     {[
                       {
                         icon: Play,
@@ -1080,7 +1296,7 @@ const CourseDetail = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
@@ -1095,7 +1311,7 @@ const CourseDetail = () => {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={handleBuyNow}
-          className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg cursor-pointer">
+          className="floating-cart-btn bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg cursor-pointer">
           <ShoppingCart className="h-6 w-6" />
         </motion.div>
       </motion.div>
