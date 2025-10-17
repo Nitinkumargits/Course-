@@ -39,6 +39,7 @@ import {
   BarChart3,
   Mail,
   ExternalLink,
+  X,
 } from "lucide-react";
 import { courses } from "../data/courses";
 import { useApp } from "../context/AppContext";
@@ -50,18 +51,7 @@ const CourseDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart, cart } = useApp();
-  const [activeTab, setActiveTab] = useState("overview");
-
-  const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
-
-    // GSAP animation for tab content
-    gsap.fromTo(
-      ".tab-content",
-      { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }
-    );
-  };
+  // Remove tab-related state and handlers since we're using full-width sections
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
@@ -72,6 +62,11 @@ const CourseDetail = () => {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [progress, setProgress] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [showInteractiveDemo, setShowInteractiveDemo] = useState(false);
+  const [selectedSkill, setSelectedSkill] = useState(null);
+  const [expandedFAQ, setExpandedFAQ] = useState({});
+  const [showLearningPath, setShowLearningPath] = useState(false);
+  const [currentDemoStep, setCurrentDemoStep] = useState(0);
   const { scrollY } = useScroll();
 
   // GSAP refs
@@ -210,6 +205,27 @@ const CourseDetail = () => {
 
   const handleRatingLeave = () => {
     setHoveredRating(0);
+  };
+
+  const toggleFAQ = (faqId) => {
+    setExpandedFAQ((prev) => ({
+      ...prev,
+      [faqId]: !prev[faqId],
+    }));
+  };
+
+  const handleSkillClick = (skill) => {
+    setSelectedSkill(selectedSkill === skill ? null : skill);
+  };
+
+  const nextDemoStep = () => {
+    setCurrentDemoStep((prev) => (prev + 1) % demoSteps.length);
+  };
+
+  const prevDemoStep = () => {
+    setCurrentDemoStep(
+      (prev) => (prev - 1 + demoSteps.length) % demoSteps.length
+    );
   };
 
   // Simulate progress based on user interaction
@@ -396,6 +412,138 @@ const CourseDetail = () => {
     return () => ctx.revert();
   }, [course]);
 
+  // Interactive course data
+  const courseSkills = [
+    {
+      name: "Design Thinking",
+      level: "Beginner",
+      description: "Learn the fundamentals of design thinking methodology",
+    },
+    {
+      name: "Figma",
+      level: "Intermediate",
+      description: "Master Figma for UI/UX design and prototyping",
+    },
+    {
+      name: "User Research",
+      level: "Beginner",
+      description: "Conduct effective user research and usability testing",
+    },
+    {
+      name: "Wireframing",
+      level: "Beginner",
+      description: "Create wireframes and low-fidelity prototypes",
+    },
+    {
+      name: "Visual Design",
+      level: "Intermediate",
+      description: "Design beautiful and functional user interfaces",
+    },
+    {
+      name: "Prototyping",
+      level: "Intermediate",
+      description: "Build interactive prototypes for user testing",
+    },
+  ];
+
+  const prerequisites = [
+    "Basic computer skills",
+    "Access to Figma (free account)",
+    "Creative mindset",
+    "No prior design experience required",
+  ];
+
+  const courseOutcomes = [
+    "Create professional UI/UX designs",
+    "Build interactive prototypes",
+    "Conduct user research",
+    "Design user-centered experiences",
+    "Build a professional design portfolio",
+  ];
+
+  const careerPaths = [
+    {
+      title: "UI Designer",
+      salary: "$65,000 - $95,000",
+      description: "Focus on visual design and user interface creation",
+    },
+    {
+      title: "UX Designer",
+      salary: "$70,000 - $105,000",
+      description: "Specialize in user experience and research",
+    },
+    {
+      title: "Product Designer",
+      salary: "$80,000 - $120,000",
+      description: "End-to-end product design and strategy",
+    },
+    {
+      title: "Design Consultant",
+      salary: "$60,000 - $150,000",
+      description: "Freelance or agency-based design work",
+    },
+  ];
+
+  const demoSteps = [
+    {
+      title: "Design Brief",
+      content: "Understanding project requirements and user needs",
+    },
+    {
+      title: "User Research",
+      content: "Conducting interviews and analyzing user behavior",
+    },
+    {
+      title: "Wireframing",
+      content: "Creating low-fidelity layouts and structure",
+    },
+    {
+      title: "Visual Design",
+      content: "Applying colors, typography, and visual elements",
+    },
+    {
+      title: "Prototyping",
+      content: "Building interactive prototypes for testing",
+    },
+    {
+      title: "User Testing",
+      content: "Testing designs with real users and iterating",
+    },
+  ];
+
+  const faqData = [
+    {
+      id: 1,
+      question: "Do I need any prior design experience?",
+      answer:
+        "No prior design experience is required! This course is designed for complete beginners and will teach you everything from the ground up.",
+    },
+    {
+      id: 2,
+      question: "What software will I need?",
+      answer:
+        "You'll primarily use Figma, which offers a free plan. We'll also cover Adobe XD and other industry-standard tools.",
+    },
+    {
+      id: 3,
+      question: "How long does it take to complete?",
+      answer:
+        "The course is 30 hours of content, but you can learn at your own pace. Most students complete it in 4-6 weeks.",
+    },
+    {
+      id: 4,
+      question: "Will I get a certificate?",
+      answer:
+        "Yes! You'll receive a certificate of completion that you can add to your LinkedIn profile and resume.",
+    },
+    {
+      id: 5,
+      question: "Can I get a job after this course?",
+      answer:
+        "Many students have successfully transitioned into UI/UX design roles. We provide career guidance and portfolio building support.",
+    },
+  ];
+
   // Mock reviews data
   const reviews = [
     {
@@ -433,12 +581,7 @@ const CourseDetail = () => {
     },
   ];
 
-  const tabs = [
-    { id: "overview", label: "Overview", icon: BookOpen },
-    { id: "curriculum", label: "Curriculum", icon: Play },
-    { id: "instructor", label: "Instructor", icon: Award },
-    { id: "reviews", label: "Reviews", icon: MessageCircle },
-  ];
+  // Remove tabs array since we're using full-width sections
 
   return (
     <div
@@ -554,10 +697,10 @@ const CourseDetail = () => {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            {/* Course Header */}
+        {/* Course Header and Sidebar Layout */}
+        <div className="flex flex-col lg:flex-row lg:gap-8 mb-8">
+          {/* Course Header */}
+          <div className="flex-1">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -710,433 +853,10 @@ const CourseDetail = () => {
                 )}
               </div>
             </motion.div>
-
-            {/* Tabs */}
-            <div
-              ref={tabsRef}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg mb-8">
-              <div className="border-b border-gray-200 dark:border-gray-700">
-                <nav className="flex space-x-8 px-6">
-                  {tabs.map((tab) => (
-                    <motion.button
-                      key={tab.id}
-                      whileHover={{ y: -2 }}
-                      onClick={() => handleTabChange(tab.id)}
-                      className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
-                        activeTab === tab.id
-                          ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                          : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                      }`}>
-                      <tab.icon className="h-4 w-4 mr-2" />
-                      {tab.label}
-                    </motion.button>
-                  ))}
-                </nav>
-              </div>
-
-              <div className="p-6">
-                {activeTab === "overview" && (
-                  <div className="tab-content">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                      About this course
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-6">
-                      {course.longDescription}
-                    </p>
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                      What you'll learn
-                    </h4>
-                    <ul className="space-y-2">
-                      {course.modules.map((module, index) => (
-                        <motion.li
-                          key={index}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.1 }}
-                          className="flex items-center text-gray-600 dark:text-gray-300">
-                          <CheckCircle className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
-                          {module}
-                        </motion.li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {activeTab === "curriculum" && (
-                  <div className="tab-content">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                      Course Curriculum
-                    </h3>
-                    <div className="space-y-3">
-                      {course.modules.map((module, index) => (
-                        <motion.div
-                          key={index}
-                          data-module={index}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.1 }}
-                          className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden">
-                          <motion.button
-                            whileHover={{
-                              backgroundColor: "rgba(59, 130, 246, 0.05)",
-                            }}
-                            onClick={() => toggleModule(index)}
-                            onMouseEnter={() => setHoveredModule(index)}
-                            onMouseLeave={() => setHoveredModule(null)}
-                            className="w-full flex items-center justify-between p-4 text-left transition-colors duration-200">
-                            <div className="flex items-center">
-                              <motion.div
-                                className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-3"
-                                animate={{
-                                  scale: hoveredModule === index ? 1.1 : 1,
-                                  backgroundColor:
-                                    hoveredModule === index
-                                      ? "rgba(59, 130, 246, 0.2)"
-                                      : undefined,
-                                }}
-                                transition={{ duration: 0.2 }}>
-                                <span className="text-blue-600 dark:text-blue-400 font-medium text-sm">
-                                  {index + 1}
-                                </span>
-                              </motion.div>
-                              <div>
-                                <span className="text-gray-900 dark:text-white font-medium">
-                                  {module}
-                                </span>
-                                <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm mt-1">
-                                  <Clock className="h-3 w-3 mr-1" />
-                                  <span>2-3 hours</span>
-                                  <span className="mx-2">•</span>
-                                  <span>5 lessons</span>
-                                </div>
-                              </div>
-                            </div>
-                            <motion.div
-                              animate={{
-                                rotate: expandedModules[index] ? 180 : 0,
-                              }}
-                              transition={{ duration: 0.2 }}>
-                              <ChevronDown className="h-5 w-5 text-gray-400" />
-                            </motion.div>
-                          </motion.button>
-
-                          <AnimatePresence>
-                            {expandedModules[index] && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.3 }}
-                                className="border-t border-gray-200 dark:border-gray-600">
-                                <div className="p-4 space-y-3">
-                                  {[
-                                    "Introduction to the topic",
-                                    "Core concepts and theory",
-                                    "Hands-on practice",
-                                    "Real-world examples",
-                                    "Quiz and assessment",
-                                  ].map((lesson, lessonIndex) => (
-                                    <motion.div
-                                      key={lessonIndex}
-                                      initial={{ opacity: 0, x: -10 }}
-                                      animate={{ opacity: 1, x: 0 }}
-                                      transition={{
-                                        duration: 0.2,
-                                        delay: lessonIndex * 0.1,
-                                      }}
-                                      className="flex items-center text-gray-600 dark:text-gray-300 text-sm">
-                                      <div className="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
-                                      {lesson}
-                                      <span className="ml-auto text-gray-400">
-                                        15 min
-                                      </span>
-                                    </motion.div>
-                                  ))}
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "instructor" && (
-                  <div className="tab-content">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
-                      About the instructor
-                    </h3>
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6">
-                      <div className="flex items-start space-x-6">
-                        <motion.div
-                          whileHover={{ scale: 1.05 }}
-                          className="relative">
-                          <img
-                            src={course.instructorAvatar}
-                            alt={course.instructor}
-                            className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-600 shadow-lg"
-                          />
-                          <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                            <CheckCircle className="h-5 w-5 text-white" />
-                          </div>
-                        </motion.div>
-                        <div className="flex-1">
-                          <h4 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                            {course.instructor}
-                          </h4>
-                          <p className="text-blue-600 dark:text-blue-400 font-medium mb-3">
-                            Senior Instructor & Industry Expert
-                          </p>
-                          <p className="text-gray-600 dark:text-gray-300 mb-4">
-                            With over 10 years of experience in the field,{" "}
-                            {course.instructor} has helped thousands of students
-                            master new skills and advance their careers.
-                          </p>
-
-                          {/* Instructor stats */}
-                          <div className="grid grid-cols-3 gap-4 mb-4">
-                            <div className="text-center">
-                              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                                10+
-                              </div>
-                              <div className="text-sm text-gray-600 dark:text-gray-400">
-                                Years Experience
-                              </div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                                50K+
-                              </div>
-                              <div className="text-sm text-gray-600 dark:text-gray-400">
-                                Students Taught
-                              </div>
-                            </div>
-                            <div className="text-center">
-                              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                                4.9
-                              </div>
-                              <div className="text-sm text-gray-600 dark:text-gray-400">
-                                Average Rating
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Skills */}
-                          <div>
-                            <h5 className="font-semibold text-gray-900 dark:text-white mb-2">
-                              Expertise
-                            </h5>
-                            <div className="flex flex-wrap gap-2">
-                              {[
-                                "Python",
-                                "Data Science",
-                                "Machine Learning",
-                                "Web Development",
-                              ].map((skill, index) => (
-                                <motion.span
-                                  key={skill}
-                                  initial={{ opacity: 0, scale: 0.8 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  transition={{
-                                    duration: 0.2,
-                                    delay: index * 0.1,
-                                  }}
-                                  className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium">
-                                  {skill}
-                                </motion.span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === "reviews" && (
-                  <div className="tab-content">
-                    <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                        Student Reviews
-                      </h3>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setShowReviews(!showReviews)}
-                        className="text-blue-600 dark:text-blue-400 font-medium">
-                        {showReviews ? "Hide Reviews" : "Show All Reviews"}
-                      </motion.button>
-                    </div>
-
-                    {/* Rating summary */}
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 mb-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="text-center">
-                          <div className="text-4xl font-bold text-gray-900 dark:text-white">
-                            {course.rating}
-                          </div>
-                          <div className="flex items-center justify-center mb-2">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                className={`h-5 w-5 ${
-                                  star <= course.rating
-                                    ? "text-yellow-400 fill-current"
-                                    : "text-gray-300"
-                                }`}
-                              />
-                            ))}
-                          </div>
-                          <div className="text-gray-600 dark:text-gray-400 text-sm">
-                            Based on {course.reviews} reviews
-                          </div>
-                        </div>
-
-                        {/* Rating breakdown */}
-                        <div className="flex-1 ml-8">
-                          {[5, 4, 3, 2, 1].map((rating) => (
-                            <div
-                              key={rating}
-                              className="flex items-center mb-2">
-                              <span className="text-sm text-gray-600 dark:text-gray-400 w-8">
-                                {rating}
-                              </span>
-                              <Star className="h-4 w-4 text-yellow-400 fill-current mr-2" />
-                              <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{
-                                    width: `${
-                                      rating === 5
-                                        ? 70
-                                        : rating === 4
-                                        ? 20
-                                        : rating === 3
-                                        ? 7
-                                        : rating === 2
-                                        ? 2
-                                        : 1
-                                    }%`,
-                                  }}
-                                  transition={{ duration: 1, delay: 0.5 }}
-                                  className="bg-yellow-400 h-2 rounded-full"
-                                />
-                              </div>
-                              <span className="text-sm text-gray-600 dark:text-gray-400 w-8">
-                                {rating === 5
-                                  ? 70
-                                  : rating === 4
-                                  ? 20
-                                  : rating === 3
-                                  ? 7
-                                  : rating === 2
-                                  ? 2
-                                  : 1}
-                                %
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* User rating input */}
-                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
-                      <h4 className="font-semibold text-gray-900 dark:text-white mb-4">
-                        Rate this course
-                      </h4>
-                      <div className="flex items-center space-x-2 mb-4">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <motion.button
-                            key={star}
-                            whileHover={{ scale: 1.2 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => handleRatingClick(star)}
-                            onMouseEnter={() => handleRatingHover(star)}
-                            onMouseLeave={handleRatingLeave}
-                            className="focus:outline-none">
-                            <Star
-                              className={`rating-star h-8 w-8 ${
-                                star <= (hoveredRating || userRating)
-                                  ? "text-yellow-400 fill-current"
-                                  : "text-gray-300 hover:text-yellow-300"
-                              }`}
-                            />
-                          </motion.button>
-                        ))}
-                      </div>
-                      {userRating > 0 && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-green-600 dark:text-green-400 text-sm">
-                          Thank you for your rating!
-                        </motion.div>
-                      )}
-                    </div>
-
-                    {/* Reviews list */}
-                    <div className="space-y-4">
-                      {reviews
-                        .slice(0, showReviews ? reviews.length : 2)
-                        .map((review, index) => (
-                          <motion.div
-                            key={review.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3, delay: index * 0.1 }}
-                            className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                            <div className="flex items-start space-x-4">
-                              <img
-                                src={review.avatar}
-                                alt={review.name}
-                                className="w-12 h-12 rounded-full object-cover"
-                              />
-                              <div className="flex-1">
-                                <div className="flex items-center justify-between mb-2">
-                                  <h5 className="font-semibold text-gray-900 dark:text-white">
-                                    {review.name}
-                                  </h5>
-                                  <div className="flex items-center">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                      <Star
-                                        key={star}
-                                        className={`h-4 w-4 ${
-                                          star <= review.rating
-                                            ? "text-yellow-400 fill-current"
-                                            : "text-gray-300"
-                                        }`}
-                                      />
-                                    ))}
-                                  </div>
-                                </div>
-                                <p className="text-gray-600 dark:text-gray-300 mb-3">
-                                  {review.comment}
-                                </p>
-                                <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                                  <span>{review.date}</span>
-                                  <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="flex items-center space-x-1 hover:text-blue-600 dark:hover:text-blue-400">
-                                    <ThumbsUp className="h-4 w-4" />
-                                    <span>Helpful ({review.helpful})</span>
-                                  </motion.button>
-                                </div>
-                              </div>
-                            </div>
-                          </motion.div>
-                        ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:w-80 lg:flex-shrink-0">
             <div ref={sidebarRef} className="sticky top-24">
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                 <div className="text-center mb-6">
@@ -1270,6 +990,61 @@ const CourseDetail = () => {
                     ))}
                   </ul>
 
+                  {/* Learning Path */}
+                  <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                      <h5 className="font-semibold text-gray-900 dark:text-white">
+                        Learning Path
+                      </h5>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setShowLearningPath(!showLearningPath)}
+                        className="text-blue-600 dark:text-blue-400 text-sm font-medium">
+                        {showLearningPath ? "Hide" : "Show"}
+                      </motion.button>
+                    </div>
+
+                    <AnimatePresence>
+                      {showLearningPath && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="space-y-3">
+                          {course.modules.map((module, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.3, delay: index * 0.1 }}
+                              className="flex items-center p-3 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900 dark:to-purple-900 rounded-lg border border-blue-200 dark:border-blue-700">
+                              <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                {index + 1}
+                              </div>
+                              <div className="flex-1">
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {module}
+                                </div>
+                                <div className="text-xs text-gray-600 dark:text-gray-400">
+                                  {index === 0
+                                    ? "Foundation"
+                                    : index === course.modules.length - 1
+                                    ? "Advanced"
+                                    : "Intermediate"}
+                                </div>
+                              </div>
+                              {index < course.modules.length - 1 && (
+                                <div className="w-4 h-4 border-r-2 border-b-2 border-blue-400 transform rotate-45"></div>
+                              )}
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
                   {/* Course stats */}
                   <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                     <h5 className="font-semibold text-gray-900 dark:text-white mb-3">
@@ -1298,6 +1073,822 @@ const CourseDetail = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Full-Width Sections */}
+        <div className="space-y-16">
+          {/* Overview Section */}
+          <motion.section
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <div className="flex items-center mb-6">
+              <BookOpen className="h-8 w-8 text-blue-600 mr-3" />
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Course Overview
+              </h2>
+            </div>
+            <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+              {course.longDescription}
+            </p>
+            <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+              What you'll learn
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {course.modules.map((module, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="flex items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <CheckCircle className="h-6 w-6 text-green-500 mr-4 flex-shrink-0" />
+                  <span className="text-gray-700 dark:text-gray-300 font-medium">
+                    {module}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+
+          {/* Curriculum Section */}
+          <motion.section
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <div className="flex items-center mb-6">
+              <Play className="h-8 w-8 text-green-600 mr-3" />
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Course Curriculum
+              </h2>
+            </div>
+            <div className="space-y-4">
+              {course.modules.map((module, index) => (
+                <motion.div
+                  key={index}
+                  data-module={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-gray-50 dark:bg-gray-700 rounded-lg overflow-hidden">
+                  <motion.button
+                    whileHover={{
+                      backgroundColor: "rgba(59, 130, 246, 0.05)",
+                    }}
+                    onClick={() => toggleModule(index)}
+                    onMouseEnter={() => setHoveredModule(index)}
+                    onMouseLeave={() => setHoveredModule(null)}
+                    className="w-full flex items-center justify-between p-6 text-left transition-colors duration-200">
+                    <div className="flex items-center">
+                      <motion.div
+                        className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-4"
+                        animate={{
+                          scale: hoveredModule === index ? 1.1 : 1,
+                          backgroundColor:
+                            hoveredModule === index
+                              ? "rgba(59, 130, 246, 0.2)"
+                              : undefined,
+                        }}
+                        transition={{ duration: 0.2 }}>
+                        <span className="text-blue-600 dark:text-blue-400 font-bold text-lg">
+                          {index + 1}
+                        </span>
+                      </motion.div>
+                      <div>
+                        <span className="text-xl font-semibold text-gray-900 dark:text-white">
+                          {module}
+                        </span>
+                        <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm mt-1">
+                          <Clock className="h-4 w-4 mr-1" />
+                          <span>2-3 hours</span>
+                          <span className="mx-2">•</span>
+                          <span>5 lessons</span>
+                        </div>
+                      </div>
+                    </div>
+                    <motion.div
+                      animate={{
+                        rotate: expandedModules[index] ? 180 : 0,
+                      }}
+                      transition={{ duration: 0.2 }}>
+                      <ChevronDown className="h-6 w-6 text-gray-400" />
+                    </motion.div>
+                  </motion.button>
+
+                  <AnimatePresence>
+                    {expandedModules[index] && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="border-t border-gray-200 dark:border-gray-600">
+                        <div className="p-6 space-y-4">
+                          {[
+                            "Introduction to the topic",
+                            "Core concepts and theory",
+                            "Hands-on practice",
+                            "Real-world examples",
+                            "Quiz and assessment",
+                          ].map((lesson, lessonIndex) => (
+                            <motion.div
+                              key={lessonIndex}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{
+                                duration: 0.2,
+                                delay: lessonIndex * 0.1,
+                              }}
+                              className="flex items-center text-gray-600 dark:text-gray-300">
+                              <div className="w-3 h-3 bg-blue-400 rounded-full mr-4"></div>
+                              <span className="font-medium">{lesson}</span>
+                              <span className="ml-auto text-gray-400">
+                                15 min
+                              </span>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+            </div>
+          </motion.section>
+
+          {/* Skills Section */}
+          <motion.section
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <div className="flex items-center mb-6">
+              <Target className="h-8 w-8 text-purple-600 mr-3" />
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Skills You'll Learn
+              </h2>
+            </div>
+
+            {/* Prerequisites */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+                Prerequisites
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {prerequisites.map((prereq, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className="flex items-center p-4 bg-green-50 dark:bg-green-900 border border-green-200 dark:border-green-700 rounded-lg">
+                    <CheckCircle className="h-6 w-6 text-green-500 mr-4 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">
+                      {prereq}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Skills Grid */}
+            <div className="mb-12">
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+                Core Skills
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {courseSkills.map((skill, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    whileHover={{ scale: 1.02 }}
+                    onClick={() => handleSkillClick(skill.name)}
+                    className={`p-6 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                      selectedSkill === skill.name
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900"
+                        : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-blue-300"
+                    }`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        {skill.name}
+                      </h4>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          skill.level === "Beginner"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                            : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                        }`}>
+                        {skill.level}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      {skill.description}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+
+            {/* Course Outcomes */}
+            <div>
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+                What You'll Achieve
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {courseOutcomes.map((outcome, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className="flex items-center p-4 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg">
+                    <Target className="h-6 w-6 text-blue-500 mr-4 flex-shrink-0" />
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">
+                      {outcome}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Interactive Demo Section */}
+          <motion.section
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <div className="flex items-center mb-6">
+              <Lightbulb className="h-8 w-8 text-yellow-600 mr-3" />
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Interactive Course Demo
+              </h2>
+            </div>
+
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900 dark:to-blue-900 rounded-xl p-8 mb-8">
+              <div className="text-center mb-8">
+                <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                  {demoSteps[currentDemoStep].title}
+                </h3>
+                <p className="text-xl text-gray-600 dark:text-gray-300">
+                  {demoSteps[currentDemoStep].content}
+                </p>
+              </div>
+
+              {/* Demo Progress */}
+              <div className="mb-8">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-lg text-gray-600 dark:text-gray-400">
+                    Step {currentDemoStep + 1} of {demoSteps.length}
+                  </span>
+                  <span className="text-lg text-gray-600 dark:text-gray-400">
+                    {Math.round(
+                      ((currentDemoStep + 1) / demoSteps.length) * 100
+                    )}
+                    %
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{
+                      width: `${
+                        ((currentDemoStep + 1) / demoSteps.length) * 100
+                      }%`,
+                    }}
+                    transition={{ duration: 0.5 }}
+                    className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full"
+                  />
+                </div>
+              </div>
+
+              {/* Demo Navigation */}
+              <div className="flex justify-between items-center">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={prevDemoStep}
+                  className="flex items-center px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                  <ArrowLeft className="h-5 w-5 mr-2" />
+                  Previous
+                </motion.button>
+
+                <div className="flex space-x-3">
+                  {demoSteps.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentDemoStep(index)}
+                      className={`w-4 h-4 rounded-full transition-colors duration-200 ${
+                        index === currentDemoStep
+                          ? "bg-blue-500"
+                          : "bg-gray-300 dark:bg-gray-600"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={nextDemoStep}
+                  className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                  Next
+                  <ArrowLeft className="h-5 w-5 ml-2 rotate-180" />
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Interactive Elements */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+                <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  Try It Yourself
+                </h4>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  Experience a hands-on preview of what you'll learn in this
+                  course.
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowInteractiveDemo(!showInteractiveDemo)}
+                  className="w-full bg-purple-600 text-white py-3 px-6 rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                  {showInteractiveDemo
+                    ? "Close Demo"
+                    : "Start Interactive Demo"}
+                </motion.button>
+              </div>
+
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
+                <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  Course Preview
+                </h4>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  Watch a sample lesson to see the teaching style and content
+                  quality.
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsVideoPlaying(true)}
+                  className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center">
+                  <Play className="h-5 w-5 mr-2" />
+                  Watch Preview
+                </motion.button>
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Career Section */}
+          <motion.section
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <div className="flex items-center mb-6">
+              <TrendingUp className="h-8 w-8 text-green-600 mr-3" />
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Career Opportunities
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              {careerPaths.map((career, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 hover:shadow-lg transition-shadow duration-200">
+                  <div className="flex items-start justify-between mb-4">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                      {career.title}
+                    </h3>
+                    <span className="text-lg font-medium text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900 px-3 py-1 rounded-full">
+                      {career.salary}
+                    </span>
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    {career.description}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Success Stories */}
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 rounded-xl p-8">
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+                Success Stories
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-2">
+                    85%
+                  </div>
+                  <div className="text-lg text-gray-600 dark:text-gray-400">
+                    Career Change Success
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                    $78K
+                  </div>
+                  <div className="text-lg text-gray-600 dark:text-gray-400">
+                    Average Starting Salary
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+                    6 months
+                  </div>
+                  <div className="text-lg text-gray-600 dark:text-gray-400">
+                    Average Time to Job
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+
+          {/* Instructor Section */}
+          <motion.section
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <div className="flex items-center mb-6">
+              <Award className="h-8 w-8 text-orange-600 mr-3" />
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                About the Instructor
+              </h2>
+            </div>
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-8">
+              <div className="flex flex-col lg:flex-row items-start space-y-8 lg:space-y-0 lg:space-x-8">
+                <motion.div whileHover={{ scale: 1.05 }} className="relative">
+                  <img
+                    src={course.instructorAvatar}
+                    alt={course.instructor}
+                    className="w-32 h-32 rounded-full object-cover border-4 border-white dark:border-gray-600 shadow-lg"
+                  />
+                  <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                    <CheckCircle className="h-6 w-6 text-white" />
+                  </div>
+                </motion.div>
+                <div className="flex-1">
+                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                    {course.instructor}
+                  </h3>
+                  <p className="text-blue-600 dark:text-blue-400 font-medium text-xl mb-4">
+                    Senior Instructor & Industry Expert
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-300 text-lg mb-6">
+                    With over 10 years of experience in the field,{" "}
+                    {course.instructor} has helped thousands of students master
+                    new skills and advance their careers.
+                  </p>
+
+                  {/* Instructor stats */}
+                  <div className="grid grid-cols-3 gap-6 mb-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                        10+
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Years Experience
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                        50K+
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Students Taught
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                        4.9
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Average Rating
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Skills */}
+                  <div>
+                    <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                      Expertise
+                    </h4>
+                    <div className="flex flex-wrap gap-3">
+                      {[
+                        "Python",
+                        "Data Science",
+                        "Machine Learning",
+                        "Web Development",
+                      ].map((skill, index) => (
+                        <motion.span
+                          key={skill}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          transition={{
+                            duration: 0.2,
+                            delay: index * 0.1,
+                          }}
+                          viewport={{ once: true }}
+                          className="px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium">
+                          {skill}
+                        </motion.span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.section>
+
+          {/* FAQ Section */}
+          <motion.section
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <div className="flex items-center mb-6">
+              <MessageCircle className="h-8 w-8 text-indigo-600 mr-3" />
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                Frequently Asked Questions
+              </h2>
+            </div>
+
+            <div className="space-y-6">
+              {faqData.map((faq, index) => (
+                <motion.div
+                  key={faq.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+                  <motion.button
+                    whileHover={{
+                      backgroundColor: "rgba(59, 130, 246, 0.05)",
+                    }}
+                    onClick={() => toggleFAQ(faq.id)}
+                    className="w-full flex items-center justify-between p-6 text-left transition-colors duration-200">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white pr-4">
+                      {faq.question}
+                    </h3>
+                    <motion.div
+                      animate={{
+                        rotate: expandedFAQ[faq.id] ? 180 : 0,
+                      }}
+                      transition={{ duration: 0.2 }}
+                      className="flex-shrink-0">
+                      <ChevronDown className="h-6 w-6 text-gray-400" />
+                    </motion.div>
+                  </motion.button>
+
+                  <AnimatePresence>
+                    {expandedFAQ[faq.id] && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="border-t border-gray-200 dark:border-gray-600">
+                        <div className="p-6 pt-4">
+                          <p className="text-gray-600 dark:text-gray-300 text-lg">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Contact Support */}
+            <div className="mt-12 bg-blue-50 dark:bg-blue-900 rounded-lg p-8">
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-4">
+                Still have questions?
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300 text-lg mb-6">
+                Our support team is here to help you succeed in your learning
+                journey.
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                Contact Support
+              </motion.button>
+            </div>
+          </motion.section>
+
+          {/* Reviews Section */}
+          <motion.section
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center">
+                <Star className="h-8 w-8 text-yellow-600 mr-3" />
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  Student Reviews
+                </h2>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowReviews(!showReviews)}
+                className="text-blue-600 dark:text-blue-400 font-medium text-lg">
+                {showReviews ? "Hide Reviews" : "Show All Reviews"}
+              </motion.button>
+            </div>
+
+            {/* Rating summary */}
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-8 mb-8">
+              <div className="flex flex-col lg:flex-row items-center justify-between">
+                <div className="text-center mb-8 lg:mb-0">
+                  <div className="text-5xl font-bold text-gray-900 dark:text-white mb-2">
+                    {course.rating}
+                  </div>
+                  <div className="flex items-center justify-center mb-3">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`h-6 w-6 ${
+                          star <= course.rating
+                            ? "text-yellow-400 fill-current"
+                            : "text-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <div className="text-gray-600 dark:text-gray-400 text-lg">
+                    Based on {course.reviews} reviews
+                  </div>
+                </div>
+
+                {/* Rating breakdown */}
+                <div className="flex-1 lg:ml-12">
+                  {[5, 4, 3, 2, 1].map((rating) => (
+                    <div key={rating} className="flex items-center mb-3">
+                      <span className="text-lg text-gray-600 dark:text-gray-400 w-8">
+                        {rating}
+                      </span>
+                      <Star className="h-5 w-5 text-yellow-400 fill-current mr-3" />
+                      <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-3 mr-3">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          whileInView={{
+                            width: `${
+                              rating === 5
+                                ? 70
+                                : rating === 4
+                                ? 20
+                                : rating === 3
+                                ? 7
+                                : rating === 2
+                                ? 2
+                                : 1
+                            }%`,
+                          }}
+                          transition={{ duration: 1, delay: 0.5 }}
+                          viewport={{ once: true }}
+                          className="bg-yellow-400 h-3 rounded-full"
+                        />
+                      </div>
+                      <span className="text-lg text-gray-600 dark:text-gray-400 w-12">
+                        {rating === 5
+                          ? 70
+                          : rating === 4
+                          ? 20
+                          : rating === 3
+                          ? 7
+                          : rating === 2
+                          ? 2
+                          : 1}
+                        %
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* User rating input */}
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-8 mb-8">
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+                Rate this course
+              </h3>
+              <div className="flex items-center space-x-3 mb-6">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <motion.button
+                    key={star}
+                    whileHover={{ scale: 1.2 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleRatingClick(star)}
+                    onMouseEnter={() => handleRatingHover(star)}
+                    onMouseLeave={handleRatingLeave}
+                    className="focus:outline-none">
+                    <Star
+                      className={`rating-star h-10 w-10 ${
+                        star <= (hoveredRating || userRating)
+                          ? "text-yellow-400 fill-current"
+                          : "text-gray-300 hover:text-yellow-300"
+                      }`}
+                    />
+                  </motion.button>
+                ))}
+              </div>
+              {userRating > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-green-600 dark:text-green-400 text-lg">
+                  Thank you for your rating!
+                </motion.div>
+              )}
+            </div>
+
+            {/* Reviews list */}
+            <div className="space-y-6">
+              {reviews
+                .slice(0, showReviews ? reviews.length : 2)
+                .map((review, index) => (
+                  <motion.div
+                    key={review.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
+                    <div className="flex items-start space-x-6">
+                      <img
+                        src={review.avatar}
+                        alt={review.name}
+                        className="w-16 h-16 rounded-full object-cover"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="text-xl font-semibold text-gray-900 dark:text-white">
+                            {review.name}
+                          </h4>
+                          <div className="flex items-center">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`h-5 w-5 ${
+                                  star <= review.rating
+                                    ? "text-yellow-400 fill-current"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-300 text-lg mb-4">
+                          {review.comment}
+                        </p>
+                        <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
+                          <span className="text-lg">{review.date}</span>
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="flex items-center space-x-2 hover:text-blue-600 dark:hover:text-blue-400">
+                            <ThumbsUp className="h-5 w-5" />
+                            <span className="text-lg">
+                              Helpful ({review.helpful})
+                            </span>
+                          </motion.button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+            </div>
+          </motion.section>
         </div>
       </div>
 
@@ -1331,6 +1922,141 @@ const CourseDetail = () => {
           ↑
         </motion.div>
       </motion.button>
+
+      {/* Interactive Demo Modal */}
+      <AnimatePresence>
+        {showInteractiveDemo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    Interactive UI/UX Design Demo
+                  </h3>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowInteractiveDemo(false)}
+                    className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <X className="h-6 w-6" />
+                  </motion.button>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Demo Content */}
+                  <div className="space-y-4">
+                    <div className="bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900 rounded-lg p-4">
+                      <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                        Step {currentDemoStep + 1}:{" "}
+                        {demoSteps[currentDemoStep].title}
+                      </h4>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">
+                        {demoSteps[currentDemoStep].content}
+                      </p>
+                    </div>
+
+                    {/* Interactive Elements */}
+                    <div className="space-y-3">
+                      <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <h5 className="font-medium text-gray-900 dark:text-white mb-2">
+                          Try This Exercise:
+                        </h5>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                          {currentDemoStep === 0 &&
+                            "Create a user persona for a mobile banking app"}
+                          {currentDemoStep === 1 &&
+                            "Design a user interview questionnaire"}
+                          {currentDemoStep === 2 &&
+                            "Sketch wireframes for a login screen"}
+                          {currentDemoStep === 3 &&
+                            "Choose a color palette for a fitness app"}
+                          {currentDemoStep === 4 &&
+                            "Create a clickable prototype in Figma"}
+                          {currentDemoStep === 5 &&
+                            "Plan a usability testing session"}
+                        </p>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-colors duration-200">
+                          Start Exercise
+                        </motion.button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Demo Navigation */}
+                  <div className="space-y-4">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                      <h5 className="font-medium text-gray-900 dark:text-white mb-3">
+                        Demo Progress
+                      </h5>
+                      <div className="space-y-2">
+                        {demoSteps.map((step, index) => (
+                          <div
+                            key={index}
+                            className={`flex items-center p-2 rounded-lg cursor-pointer transition-colors duration-200 ${
+                              index === currentDemoStep
+                                ? "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                                : index < currentDemoStep
+                                ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                            }`}
+                            onClick={() => setCurrentDemoStep(index)}>
+                            <div
+                              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-3 ${
+                                index === currentDemoStep
+                                  ? "bg-blue-500 text-white"
+                                  : index < currentDemoStep
+                                  ? "bg-green-500 text-white"
+                                  : "bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400"
+                              }`}>
+                              {index < currentDemoStep ? "✓" : index + 1}
+                            </div>
+                            <span className="text-sm font-medium">
+                              {step.title}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={prevDemoStep}
+                        disabled={currentDemoStep === 0}
+                        className="flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Previous
+                      </motion.button>
+
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={nextDemoStep}
+                        disabled={currentDemoStep === demoSteps.length - 1}
+                        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors duration-200">
+                        Next
+                        <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
+                      </motion.button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Notifications */}
       <div className="fixed top-20 right-4 z-50 space-y-2">
